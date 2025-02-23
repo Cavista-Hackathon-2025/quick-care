@@ -4,19 +4,19 @@ const DrugSchema = new mongoose.Schema({
   category: {
     type: String,
     enum: ['Syrup', 'Pill', 'Tablet'],
-    required: true,
+    // required: true removed
   },
   numberOfPacks: {
     type: Number,
-    required: true,
+    // required: true removed
   },
   drugName: {
     type: String,
-    required: true,
+    // required: true removed
   },
   dosage: {
     type: String,
-    required: true,
+    // required: true removed
     validate: {
       validator: function(v) {
         return /^[0-1]{3}$/.test(v); // Validates pattern like 101, 111, 100
@@ -26,13 +26,13 @@ const DrugSchema = new mongoose.Schema({
   },
   startDate: {
     type: Date,
-    required: true,
+    // required: true removed
     default: Date.now
   },
   duration: {
     days: {
       type: Number,
-      required: true
+      // required: true removed
     },
     taken: {
       type: Number,
@@ -58,15 +58,15 @@ const DrugSchema = new mongoose.Schema({
 const PharmacySchema = new mongoose.Schema({
   userId: {
     type: String,
-    required: true,
+    // required: true removed
   },
   patientName: {
     type: String,
-    required: true,
+    // required: true removed
   },
   patientPhone: {
     type: String,
-    required: true,
+    // required: true removed
   },
   relativeName: {
     type: String,
