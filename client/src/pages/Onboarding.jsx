@@ -6,9 +6,9 @@ export default function Onboarding() {
   const { user } = useUser();
   const navigate = useNavigate();
 
-  if (user.unsafeMetadata?.role === "patient")
+  if (user?.unsafeMetadata?.role === "patient")
     return <Navigate to="/patient/dashboard" />;
-  if (user.unsafeMetadata?.role === "pharmacist")
+  if (user?.unsafeMetadata?.role === "pharmacist")
     return <Navigate to="/pharmacist/dashboard" />;
 
   async function handleSelectUserRole(role) {

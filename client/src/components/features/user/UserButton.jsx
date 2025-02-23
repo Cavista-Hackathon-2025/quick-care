@@ -35,10 +35,10 @@ export default function UserButton() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
         >
           <SignIn
-            // signUpForceRedirectUrl="/pharmacist/dashboard"
-            // fallbackRedirectUrl="/pharmacist/dashboard"
-            signUpForceRedirectUrl="/onboarding"
-            fallbackRedirectUrl="/onboarding"
+            signUpForceRedirectUrl="/pharmacist/dashboard"
+            fallbackRedirectUrl="/pharmacist/dashboard"
+            // signUpForceRedirectUrl="/onboarding"
+            // fallbackRedirectUrl="/onboarding"
           />
         </div>
       )}

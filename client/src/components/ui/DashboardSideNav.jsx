@@ -50,6 +50,7 @@ export default function DashboardSideNav() {
 
   const user = useUser();
   const userType = user?.user?.unsafeMetadata?.role;
+
   // if (pathname.includes("patient") || pathname.includes("pharmacist")) return null;
 
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
@@ -71,7 +72,7 @@ export default function DashboardSideNav() {
         } transition-transform duration-300`}
         ref={sideNavRef}
       >
-        <div className="flex justify-between items-center p-4 pb-0">
+        <div className="flex justify-between items-center p-4 pt-5 pb-0">
           <Link to="/" className="font-bold text-2xl ">
             Better<span className="text-brandPrimary">Care</span>{" "}
           </Link>
@@ -112,9 +113,11 @@ export default function DashboardSideNav() {
       </div>
 
       {/* Side Nav Toggle Button */}
-      <button onClick={handleNavigateToSideNav}>
-        <Menu className="w-7 h-7" />
-      </button>
+      {pathname.includes("pharmacist") && (
+        <button onClick={handleNavigateToSideNav}>
+          <Menu className="w-7 h-7" />
+        </button>
+      )}
     </>
   );
 }

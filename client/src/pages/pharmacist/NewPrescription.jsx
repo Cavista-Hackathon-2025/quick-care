@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import CustomFormField from "@/components/ui/CustomFormField";
 import DrugDetails from "@/components/features/drugs/DrugDetails";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import {
@@ -16,8 +16,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import AddDosageForm from "@/components/features/drugs/AddDosageForm";
+import { useUser } from "@clerk/clerk-react";
 
 // ✅ Improved phone regex: Only digits, allows optional + at start
 const phoneRegex = /^\+?\d{10,15}$/;
@@ -194,6 +195,13 @@ function NewPrescriptionForm({
 }
 
 function Summary({ data, decrementStep }) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { user } = useUser();
+  const userId = user?.id;
+
+  console.log(userId);
+
   const handleSave = () => {
     const beforePrint = () => {
       window.removeEventListener("beforeprint", beforePrint);
@@ -209,9 +217,60 @@ function Summary({ data, decrementStep }) {
     window.print();
   };
 
-  const handleFinish = () => {
-    // Navigate to the main page
-    window.location.href = "/pharmacist/dashboard";
+  useEffect(() => {
+    async function fetchPrescriptions() {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/pharmacy`);
+      const json = await res.json();
+      console.log(json);
+    }
+    fetchPrescriptions();
+  }, []);
+
+  const handleFinish = async () => {
+    const { fullName, phone, nextOfKinName, nextOfKinPhone, drugs } = data;
+
+    const { isSyrup, ...updatedDrugs } = drugs.map((drug) => ({
+      ...drug,
+      category: drug.isSyrup ? "Syrup" : "Tablet",
+      duration: {
+        days: drug.duration,
+      },
+    }));
+
+    const newPrescription = {
+      patientName: fullName,
+      patientPhone: phone,
+      relativeName: nextOfKinName,
+      relativePhone: nextOfKinPhone,
+      drugs: updatedDrugs,
+      userId,
+    };
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/pharmacy`, {
+        method: "POST",
+        body: JSON.stringify(newPrescription),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to save prescription");
+      }
+
+      const json = await res.json();
+      console.log(json);
+      toast.success("Prescription saved!");
+      // window.location.href = "/pharmacist/dashboard";
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to save prescription");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -301,8 +360,19 @@ function Summary({ data, decrementStep }) {
           Back
         </Button>
         <Button onClick={handleSave}>Save Prescription</Button>
-        <Button variant="default" onClick={handleFinish}>
-          Finish
+        <Button
+          variant="default"
+          onClick={handleFinish}
+          className={`${isLoading ? "pointer-events-none" : ""}`}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              Submitting <Loader2 className="w-4 h-4 animate-spin" />
+            </div>
+          ) : (
+            "Submit"
+          )}
         </Button>
       </div>
     </div>
