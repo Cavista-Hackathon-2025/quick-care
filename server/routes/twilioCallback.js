@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const twilio = require('twilio'); // Added import for twilio
 const { handleMedicationConfirmation } = require('../services/twilioService');
 
 // Twilio webhook endpoint
