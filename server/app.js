@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Import your routes
-const pharmacyRoutes = require('./routes/pharmacy');
+const pharmacyRoutes = require('./routes/Pharmarcy');
 
 // Use routes
 app.use('/api/pharmacy', pharmacyRoutes);
