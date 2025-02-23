@@ -56,7 +56,7 @@ const PharmacySchema = new mongoose.Schema({
     default: [],
   },
 }, {
-  timestamps: true, // automatically manages createdAt and updatedAt fields
+  timestamps: true, // Automatically adds createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model('Pharmacy', PharmacySchema);

@@ -18,12 +18,12 @@ router.post('/', async (req, res) => {
 
     // Create a new document based on the Pharmacy model
     const newRecord = new Pharmacy({
-      userId, // user ID from the frontend (Google user ID, for example)
+      userId, // This links the record to the authenticated user
       patientName,
       patientPhone,
       relativeName,
       relativePhone,
-      drugs, // expecting an array of drug objects
+      drugs, // Expecting an array of drug objects
     });
 
     // Save the document to MongoDB
@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET: Retrieve all pharmacy records (optionally you can filter by userId)
+// GET: Retrieve all pharmacy records
 router.get('/', async (req, res) => {
   try {
     const records = await Pharmacy.find();
