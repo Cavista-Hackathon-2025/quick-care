@@ -4,10 +4,11 @@ const router = express.Router();
 // Import the Pharmacy model
 const Pharmacy = require('../models/Pharmacy');
 
-// POST: Create a new pharmacy record
+// POST: Create a new pharmacy record with userId and drug details
 router.post('/', async (req, res) => {
   try {
     const {
+      userId,
       patientName,
       patientPhone,
       relativeName,
@@ -15,16 +16,17 @@ router.post('/', async (req, res) => {
       drugs,
     } = req.body;
 
-    // Create a new document based on the model
+    // Create a new document based on the Pharmacy model
     const newRecord = new Pharmacy({
+      userId, // user ID from the frontend (Google user ID, for example)
       patientName,
       patientPhone,
       relativeName,
       relativePhone,
-      drugs, // Expecting an array of drug objects
+      drugs, // expecting an array of drug objects
     });
 
-    // Save to MongoDB
+    // Save the document to MongoDB
     const savedRecord = await newRecord.save();
     return res.status(201).json(savedRecord);
   } catch (error) {
@@ -33,7 +35,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET: Retrieve all pharmacy records
+// GET: Retrieve all pharmacy records (optionally you can filter by userId)
 router.get('/', async (req, res) => {
   try {
     const records = await Pharmacy.find();
