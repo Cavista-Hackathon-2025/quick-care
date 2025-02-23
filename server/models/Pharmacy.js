@@ -15,15 +15,21 @@ const DrugSchema = new mongoose.Schema({
     required: true,
   },
   dosage: {
-    type: String,
-    required: true,
+    pattern: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function(v) {
+          return /^[0-1]{3}$/.test(v); // Validates pattern like 101, 111, 100
+        },
+        message: props => `${props.value} is not a valid dosage pattern!`
+      }
+    },
+    // Map dosage pattern to times
+    morningTime: { type: String, default: "08:00" },
+    afternoonTime: { type: String, default: "14:00" },
+    eveningTime: { type: String, default: "20:00" }
   },
-  // Modified time field to support multiple daily doses
-  scheduledTimes: [{
-    type: String,  // Store times in 24-hour format (HH:mm)
-    required: true
-  }],
-  // Add duration tracking
   startDate: {
     type: Date,
     required: true,
@@ -39,16 +45,19 @@ const DrugSchema = new mongoose.Schema({
       default: 0
     }
   },
-  // Track if medication is active
   isActive: {
     type: Boolean,
     default: true
   },
-  // Track medication history
   history: [{
     date: Date,
+    period: {
+      type: String,
+      enum: ['morning', 'afternoon', 'evening']
+    },
     taken: Boolean,
-    confirmedAt: Date
+    confirmedAt: Date,
+    missedDose: Boolean
   }]
 });
 
@@ -82,4 +91,3 @@ const PharmacySchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Pharmacy', PharmacySchema);
-
