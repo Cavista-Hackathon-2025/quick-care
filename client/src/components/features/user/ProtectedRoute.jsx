@@ -1,24 +1,17 @@
 import { useUser } from "@clerk/clerk-react";
-import { useEffect } from "react";
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { BarLoader } from "react-spinners";
 
-export default function ProtectedRoute({ children }) {
-  // const { isSignedIn } = useUser();
-  // const navigate = useNavigate();
+function ProtectedRoute({ children }) {
+  const { isSignedIn, isLoaded } = useUser();
 
-  // const userRole = useUser()?.user?.unsafeMetadata?.role;
+  if (!isLoaded)
+    return <BarLoader className="text-brandPrimary" width={"100%"} />;
 
-  // useEffect(() => {
-  //   if (!isSignedIn) {
-  //     navigate("/");
-  //   } else if (!userRole) {
-  //     navigate("/onboarding");
-  //   }
-  // }, [isSignedIn, navigate]);
-
-  // if (!isSignedIn) {
-  //   return <Navigate to="/" />;
-  // }
+  if (isLoaded && !isSignedIn && isSignedIn !== undefined)
+    return <Navigate to="/?sign_in=true" />;
 
   return children;
 }
+
+export default ProtectedRoute;

@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useUser } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 const prescriptions = [
@@ -82,6 +83,10 @@ const prescriptions = [
 ];
 
 export default function PatientDashboard() {
+  const { user } = useUser();
+  const userRole = user?.unsafeMetadata?.role;
+
+  console.log(userRole);
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-x-12 gap-y-2 mb-12">

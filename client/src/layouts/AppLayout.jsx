@@ -9,8 +9,8 @@ export default function AppLayout() {
       <main className="h-screen mx-auto flex flex-col">
         <Navbar />
         <div className="flex-1 overflow-y-auto w-full">
-          <div className="py-10 flex-1 h-full">
-            <div className="container-custom h-full">
+          <div className="py-10 flex-1">
+            <div className="container-custom">
               <Outlet />
             </div>
           </div>

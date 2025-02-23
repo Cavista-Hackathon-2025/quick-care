@@ -2,16 +2,16 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Home from "./pages/Home";
 import DashboardLayout from "./layouts/DashboardLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import AppLayout from "./layouts/AppLayout";
 import { ThemeProvider } from "./components/theme/theme-provider";
 import PharmacistDashboard from "@/pages/pharmacist/PharmacistDashboard";
 import { Toaster } from "react-hot-toast";
 import NewPrescription from "@/pages/pharmacist/NewPrescription";
 import ProtectedRoute from "@/components/features/user/ProtectedRoute";
-import Onboarding from "@/pages/Onboarding";
-import PatientDashboard from "./pages/patient/PatientDashboard";
-import PatientPrescriptions from "@/pages/patient/PatientPrescriptions";
+import RecentPrescriptions from "@/pages/pharmacist/RecentPrescriptions";
+// import Onboarding from "@/pages/Onboarding";
+// import PatientDashboard from "./pages/patient/PatientDashboard";
+// import PatientPrescriptions from "@/pages/patient/PatientPrescriptions";
 
 const router = createBrowserRouter([
   {
@@ -21,15 +21,14 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      {
-        path: "/onboarding",
-        element: (
-          <ProtectedRoute>
-            <Onboarding />
-          </ProtectedRoute>
-        ),
-      },
-
+      // {
+      //   path: "/onboarding",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <Onboarding />
+      //     </ProtectedRoute>
+      //   ),
+      // },
       {
         path: "/pharmacist/new-prescription",
         element: (
@@ -47,29 +46,37 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/patient/dashboard",
+        path: "/pharmacist/recent-prescriptions",
         element: (
           <ProtectedRoute>
-            <PatientDashboard />
+            <RecentPrescriptions />
           </ProtectedRoute>
         ),
       },
-      {
-        path: "/patient/prescriptions",
-        element: (
-          <ProtectedRoute>
-            <PatientPrescriptions />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/admin/dashboard",
-        element: (
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        ),
-      },
+      // {
+      //   path: "/patient/dashboard",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <PatientDashboard />
+      //     </ProtectedRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/patient/prescriptions",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <PatientPrescriptions />
+      //     </ProtectedRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/admin/dashboard",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <AdminDashboard />
+      //     </ProtectedRoute>
+      //   ),
+      // },
       {
         element: (
           <ProtectedRoute>

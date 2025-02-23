@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="container-custom">
         <p className="text-center text-sm">
           &copy; {new Date().getFullYear()} QuickCare. All rights reserved.
-          Brought to you by <a href="https://brody.ng">Cavista Technologies</a>
+          Brought to you by <a href="#">Cavista Technologies</a>
         </p>
       </div>
     </footer>
