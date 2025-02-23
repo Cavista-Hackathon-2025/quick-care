@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Define a sub-schema for each drug entry
 const DrugSchema = new mongoose.Schema({
   category: {
     type: String,
@@ -19,20 +18,45 @@ const DrugSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  time: {
-    type: String,
+  // Modified time field to support multiple daily doses
+  scheduledTimes: [{
+    type: String,  // Store times in 24-hour format (HH:mm)
+    required: true
+  }],
+  // Add duration tracking
+  startDate: {
+    type: Date,
     required: true,
+    default: Date.now
   },
+  duration: {
+    days: {
+      type: Number,
+      required: true
+    },
+    taken: {
+      type: Number,
+      default: 0
+    }
+  },
+  // Track if medication is active
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  // Track medication history
+  history: [{
+    date: Date,
+    taken: Boolean,
+    confirmedAt: Date
+  }]
 });
 
-// Main schema for pharmacy/prescription data
 const PharmacySchema = new mongoose.Schema({
-  // Store the user ID from the frontend (e.g., Google user ID)
   userId: {
     type: String,
     required: true,
   },
-  // Patient info
   patientName: {
     type: String,
     required: true,
@@ -41,7 +65,6 @@ const PharmacySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Relative/Next of Kin info (optional)
   relativeName: {
     type: String,
     default: '',
@@ -50,13 +73,13 @@ const PharmacySchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-  // Array of drug objects
   drugs: {
     type: [DrugSchema],
     default: [],
   },
 }, {
-  timestamps: true, // Automatically adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 module.exports = mongoose.model('Pharmacy', PharmacySchema);
+
