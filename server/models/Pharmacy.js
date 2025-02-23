@@ -27,6 +27,11 @@ const DrugSchema = new mongoose.Schema({
 
 // Main schema for pharmacy/prescription data
 const PharmacySchema = new mongoose.Schema({
+  // Store the user ID from the frontend (e.g., Google user ID)
+  userId: {
+    type: String,
+    required: true,
+  },
   // Patient info
   patientName: {
     type: String,
@@ -36,7 +41,6 @@ const PharmacySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-
   // Relative/Next of Kin info (optional)
   relativeName: {
     type: String,
@@ -46,15 +50,13 @@ const PharmacySchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-
   // Array of drug objects
   drugs: {
     type: [DrugSchema],
     default: [],
   },
-},
-{
-  timestamps: true, // automatically manage createdAt and updatedAt
+}, {
+  timestamps: true, // automatically manages createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model('Pharmacy', PharmacySchema);
