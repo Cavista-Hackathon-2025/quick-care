@@ -1,114 +1,116 @@
 const cron = require('node-cron');
 const Pharmacy = require('./models/Pharmacy');
-const { sendNotification } = require('./services/twilioService');
+const { sendNotification, handleMedicationConfirmation } = require('./services/twilioService');
 
-// Helper function to check if a medication should be taken at current time
-function shouldTakeMedication(scheduledTimes) {
-  const now = new Date();
-  const currentHour = now.getHours().toString().padStart(2, '0');
-  const currentMinute = now.getMinutes().toString().padStart(2, '0');
-  const currentTime = `${currentHour}:${currentMinute}`;
-  
-  return scheduledTimes.some(time => {
-    // Allow 5-minute window before and after scheduled time
-    const [schedHour, schedMinute] = time.split(':');
-    const scheduledDate = new Date();
-    scheduledDate.setHours(parseInt(schedHour), parseInt(schedMinute));
-    
-    const timeDiff = Math.abs(now - scheduledDate);
-    return timeDiff <= 5 * 60 * 1000; // 5 minutes in milliseconds
-  });
+// Helper function to determine current period based on time of day
+function getCurrentPeriod() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 17) return 'afternoon';
+  if (hour >= 17 || hour < 5) return 'evening';
 }
 
-// Run every 5 minutes
-cron.schedule('*/5 * * * *', async () => {
-  console.log('Running medication check...');
+// Helper function to check if a dose should be marked as missed
+function shouldMarkAsMissed(period, dosagePattern) {
+  const currentHour = new Date().getHours();
+  const [morning, afternoon, evening] = dosagePattern.split('').map(Number);
+  
+  switch(period) {
+    case 'morning':
+      return morning === 1 && currentHour >= 12;
+    case 'afternoon':
+      return afternoon === 1 && currentHour >= 17;
+    case 'evening':
+      return evening === 1 && currentHour >= 23;
+    default:
+      return false;
+  }
+}
+
+// Helper function to determine if dose is required for current period
+function isDoseRequired(dosagePattern, period) {
+  const [morning, afternoon, evening] = dosagePattern.split('').map(Number);
+  
+  switch(period) {
+    case 'morning': return morning === 1;
+    case 'afternoon': return afternoon === 1;
+    case 'evening': return evening === 1;
+    default: return false;
+  }
+}
+
+// Run every minute to check for missed doses
+cron.schedule('* * * * *', async () => {
   try {
+    console.log(`[${new Date().toISOString()}] Running medication check...`);
+    
     const records = await Pharmacy.find({
       'drugs.isActive': true
     });
 
+    const currentPeriod = getCurrentPeriod();
+    console.log(`Current period: ${currentPeriod}`);
+
     for (const record of records) {
+      console.log(`Checking record for patient: ${record.patientPhone}`);
+      
       for (const drug of record.drugs) {
         if (!drug.isActive) continue;
 
-        // Check if medication duration is complete
-        if (drug.duration.taken >= drug.duration.days) {
-          drug.isActive = false;
-          await record.save();
-          continue;
-        }
+        const today = new Date().toISOString().split('T')[0];
+        console.log(`Checking ${drug.drugName} for ${today}`);
 
-        // Check if it's time to take this medication
-        if (shouldTakeMedication(drug.scheduledTimes)) {
-          const today = new Date().toISOString().split('T')[0];
-          
-          // Check if medication was already taken today
-          const takenToday = drug.history.some(h => 
-            h.date.toISOString().split('T')[0] === today && h.taken
+        // Check if dose is required and hasn't been taken
+        if (isDoseRequired(drug.dosage, currentPeriod)) {
+          const periodTaken = drug.history.some(h => 
+            h.date.toISOString().split('T')[0] === today && 
+            h.period === currentPeriod &&
+            h.taken
           );
 
-          if (!takenToday) {
-            const messageBody = `Time to take ${drug.drugName} (${drug.dosage}). Please confirm when taken.`;
+          console.log(`${drug.drugName} - Dose required: true, Taken: ${periodTaken}`);
+
+          if (!periodTaken && shouldMarkAsMissed(currentPeriod, drug.dosage)) {
+            console.log(`Marking missed dose for ${drug.drugName}`);
+            
+            // Mark as missed
+            drug.history.push({
+              date: new Date(),
+              period: currentPeriod,
+              taken: false,
+              missedDose: true
+            });
+
+            // Send missed dose notification via WhatsApp
+            const messageBody = `⚠️ Missed dose alert:\n${drug.drugName} for ${currentPeriod} period\n\nPlease take your medication as soon as possible.`;
             
             try {
+              console.log(`Sending WhatsApp notification to patient: ${record.patientPhone}`);
               await sendNotification(record.patientPhone, messageBody);
               
-              // Add to history
-              drug.history.push({
-                date: new Date(),
-                taken: false,
-                confirmedAt: null
-              });
-              
-              await record.save();
-              console.log(`Notification sent to ${record.patientPhone} for ${drug.drugName}`);
+              if (record.relativePhone) {
+                console.log(`Sending WhatsApp notification to relative: ${record.relativePhone}`);
+                await sendNotification(record.relativePhone, 
+                  `⚠️ Medication Alert:\nYour relative missed their dose of ${drug.drugName} for the ${currentPeriod} period.`
+                );
+              }
             } catch (err) {
-              console.error(`Failed to send notification for ${drug.drugName}:`, err);
+              console.error(`Failed to send WhatsApp notification:`, err);
             }
           }
+        } else {
+          console.log(`${drug.drugName} - No dose required for current period`);
         }
       }
+      await record.save();
     }
+    
+    console.log(`[${new Date().toISOString()}] Medication check completed`);
   } catch (error) {
-    console.error("Error in scheduled job:", error);
+    console.error("Error in missed dose check:", error);
   }
 });
 
-// Endpoint to confirm medication was taken
-async function confirmMedicationTaken(userId, drugId) {
-  try {
-    const record = await Pharmacy.findOne({
-      userId,
-      'drugs._id': drugId
-    });
-
-    if (!record) return false;
-
-    const drug = record.drugs.id(drugId);
-    if (!drug) return false;
-
-    const today = new Date().toISOString().split('T')[0];
-    const historyEntry = drug.history.find(h => 
-      h.date.toISOString().split('T')[0] === today && !h.taken
-    );
-
-    if (historyEntry) {
-      historyEntry.taken = true;
-      historyEntry.confirmedAt = new Date();
-      drug.duration.taken += 1;
-
-      if (drug.duration.taken >= drug.duration.days) {
-        drug.isActive = false;
-      }
-
-      await record.save();
-      return true;
-    }
-
-    return false;
-  } catch (error) {
-    console.error("Error confirming medication:", error);
-    return false;
-  }
-}
+module.exports = {
+  handleMedicationConfirmation
+};

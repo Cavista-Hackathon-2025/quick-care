@@ -15,20 +15,14 @@ const DrugSchema = new mongoose.Schema({
     required: true,
   },
   dosage: {
-    pattern: {
-      type: String,
-      required: true,
-      validate: {
-        validator: function(v) {
-          return /^[0-1]{3}$/.test(v); // Validates pattern like 101, 111, 100
-        },
-        message: props => `${props.value} is not a valid dosage pattern!`
-      }
-    },
-    // Map dosage pattern to times
-    morningTime: { type: String, default: "08:00" },
-    afternoonTime: { type: String, default: "14:00" },
-    eveningTime: { type: String, default: "20:00" }
+    type: String,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return /^[0-1]{3}$/.test(v); // Validates pattern like 101, 111, 100
+      },
+      message: props => `${props.value} is not a valid dosage pattern!`
+    }
   },
   startDate: {
     type: Date,
